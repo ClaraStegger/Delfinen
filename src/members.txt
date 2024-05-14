@@ -10,3 +10,4 @@ Ole Olsen,946684800000,123456789,oleolsen@example.com,true,false,130.0
 Karen Poulsen,1000000000000,987654321,karenpoulsen@example.com,false,true,240.0,1,92,82,72,1,1630460400000,1630546800000
 Henrik Henriksen,946684800000,987654321,henrikhenriksen@example.com,true,true,170.0
 Anne Nielsen,946684800000,123456789,annenielsen@example.com,false,false,260.0
+Frederik Frederiksen,946684800000,123456789,frederikfrederiksen@example.com,true,false,140.0
