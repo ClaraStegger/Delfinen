@@ -13,18 +13,19 @@ public class Main {
 
         members.add(new ActiveMember ("Claus Larsen",LocalDate.parse("2000-10-05"), "12345678", "clag@nfjb", LocalDate.parse("2024-10-05"), 10.0, true,new boolean[]{true,true,true,true}));
 
-        for (Member member : members) {
-            System.out.println(member);
+        for (Member memberInList : members) {
+            System.out.println(memberInList);
         }
         int choice;
         do {
-            System.out.println("*----*----*----*----*Menu*----*----*----*----*");
-            System.out.println("|          ➤ 1.  Create member               |");
-            System.out.println("|          ➤ 2.  Change member information   |");
-            System.out.println("|          ➤ 3.                              |");
-            System.out.println("|          ➤ 4.                              |");
-            System.out.println("|          ➤ 5.  Exit Program                |");
-            System.out.println("*----*----*----*----*  </^\\>  *----*----*----*");
+            System.out.println("*----*----*----*----*----*----*Menu*----*----*----*----*----*----*----*");
+            System.out.println("|          ➤ 1.  Create member                                       |");
+            System.out.println("|          ➤ 2.  Change member information                           |");
+            System.out.println("|          ➤ 3.  Show all team lists                                 |");
+            System.out.println("|          ➤ 4.  show members in arrears                             |");
+            System.out.println("|          ➤ 5.  Show results for top 5 swimmers for each discipline |");
+            System.out.println("|          ➤ 6.  Exit Program                                        |");
+            System.out.println("*----*----*----*----*----*----* </^\\>  *----*----*----*----*----*----*");
 
 
             choice = scanner.nextInt();
@@ -32,20 +33,22 @@ public class Main {
                 case 1:
                     createMember();
                     break;
+                case 2:
+                    break;
+                case 3:
+                   //loadMembers();
+                    break;
+                case 4:
+
+                    break;
                 case 5:
                     break;
             }
         } while (choice >= 1 && choice <= 4);
-
-
     }
 
-    //todo: Oprette menu og undermenu
-    //todo: Oprette medlemmer.
-
-
-
-    private static void createMember() {
+    private static void createMember() { //metode til at oprette medlemmer
+        System.out.println("test 123");
         Scanner scan = new Scanner(System.in);
         System.out.println("Enter the members name:");
         String name = scan.nextLine();
@@ -60,10 +63,14 @@ public class Main {
         System.out.println("Enter the members e-mail:");
         String email = scan.nextLine();
 
+        System.out.println("Enter the members start date:");
+        String startDateStr = scan.nextLine();
+        LocalDate startDate = LocalDate.parse(startDateStr);
+
 
     }
 
-    private static void loadMembers(List<Member> members) {
+    private static void loadMembers(List<Member> members) { //metode til at printe medlemmer til konsollen
         try {
             members.clear();
             Scanner input = new Scanner(new File("src/member.txt"));
@@ -77,7 +84,7 @@ public class Main {
         }
     }
 
-    private static void saveMembers(List<Member> members) {
+    private static void saveMembers(List<Member> members) { //metode til at gemme medlemmer til filen
         try {
             PrintStream output = new PrintStream(new File("src/member.txt"));
             for (Member member : members) {
