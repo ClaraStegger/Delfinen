@@ -22,21 +22,53 @@ public class Member {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
+        long age = this.getAge();
         String string = "Name: " + this.name
-                + "Birthdate: " + this.getBirthDateString()
-                + "Age: " + getAge()
-                + "PhoneNumber: " + this.phoneNumber
-                + "Email: " + this.email;
-        if (this.active && getAge > ){
-        string += "Senior Swimmer";
-        }else if ()
+                + "\nBirthdate: " + this.getDateString(this.birthDate)
+                + "\nAge: " + age
+                + "\nPhoneNumber: " + this.phoneNumber
+                + "\nEmail: " + this.email
+                + "\nStart Date: " + this.getDateString(this.startDate)
+                + "\nSubscription fee: " + this.getSubscriptionFee()
+                + "\nActivity Type: ";
+        if (this.isActive()) {
+            if (age >= 18) {
+                string += "Senior Swimmer";
+            } else {
+                string += "Junior Swimmer";
+            }
 
+            if (this.isCompetitiveMember()) {
+                string += ", Competitive ";// Konkurrence svømmer
+            } else {
+                string += ", Exerciser";// Motionist
+            }
 
+            string += "\nTeam: ";
+            if (this.isOnSeniorTeam()) {
+                string += "Senior ";
+            } else {
+                string += "Junior ";
+            }
+            if (this.isCompetitiveMember()) {
+                string += "Competitive ";
+            }
+            string += "Team";
 
-
-        this.birthDate.toString()
-        string +=
+            string += "\nActive Disciplines ";
+            List<String> activeDisciplines = this.getActiveDisciplines();
+            for (int i = 0; i < activeDisciplines.size(); i++) {
+                String activeDiscipline = activeDisciplines.get(i);
+                if (i == 0) {
+                    string += activeDiscipline;
+                } else {
+                    string += ", " + activeDiscipline;
+                }
+            }
+        } else {
+            string += "Passive";
+        }
         return string;
         this.name, this.birthDate, this.phoneNumber, this.email, this.active, this.senior, this.moneyOwed;
     }
@@ -58,25 +90,31 @@ public class Member {
         LocalDate birthDate = LocalDate.ofEpochDay(Long.parseLong(arguments[1]));
         String phoneNumber = arguments[2];
         String email = arguments[3];
-        boolean active = Boolean.parseBoolean(arguments[4]);
-        boolean senior = Boolean.parseBoolean(arguments[5]);
-        double moneyOwed = Double.parseDouble(arguments[6]);
-        if (arguments.length == FIELD_SIZE) {
-            return new Member(name, birthDate, phoneNumber, email, active, senior, moneyOwed);
+        LocalDate startDate = LocalDate.ofEpochDay(Long.parseLong(arguments[4]));
+        double moneyOwed = Double.parseDouble(arguments[5]);
+        if (arguments.length == FIELD_SIZE) {//should be 6
+            return new Member(name, birthDate, phoneNumber, email, startDate, moneyOwed);
         } else {
-            int activeDiscipline = Integer.parseInt(arguments[7]);
-            int[] bestTrainingResults = new int[4];
-            for (int i = 0; i < bestTrainingResults.length; i++) {
-                bestTrainingResults[i] = Integer.parseInt(arguments[8 + i]);
+            boolean seniorTeam = Boolean.parseBoolean(arguments[6]);
+            boolean[] activeDisciplines = new boolean[4];
+            for (int i = 0; i < activeDisciplines.length; i++) {
+                activeDisciplines[i] = Boolean.parseBoolean(arguments[7 + i]);
             }
-
-            List<Convention> conventions = new ArrayList<>();
-            int startingIndex = 8 + bestTrainingResults.length;//used to get conventions
-            while (arguments.length >= startingIndex) {
-                conventions.add(Convention.fromString(arguments, startingIndex));
-                startingIndex += Convention.FIELD_SIZE;
+            if (arguments.length == FIELD_SIZE + ActiveMember.FIELD_SIZE) {//should be 6 + 5 so 11
+                return new ActiveMember(name, birthDate, phoneNumber, email, startDate, moneyOwed, seniorTeam, activeDisciplines);
+            } else {
+                int[] bestTrainingResults = new int[4];
+                for (int i = 0; i < bestTrainingResults.length; i++) {
+                    bestTrainingResults[i] = Integer.parseInt(arguments[11 + i]);
+                }
+                List<Convention> conventions = new ArrayList<>();
+                int startingIndex = 11 + bestTrainingResults.length;//used to get conventions
+                while (arguments.length >= startingIndex) {
+                    conventions.add(Convention.fromString(arguments, startingIndex));
+                    startingIndex += Convention.FIELD_SIZE;
+                }
+                return new CompetitiveMember(name, birthDate, phoneNumber, email, startDate, moneyOwed, seniorTeam, activeDisciplines, bestTrainingResults, conventions);
             }
-            return new CompetitiveMember(name, birthDate, phoneNumber, email, active, senior, moneyOwed, activeDiscipline,bestTrainingResults,conventions);
         }
     }
 

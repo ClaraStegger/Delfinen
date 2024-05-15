@@ -11,6 +11,8 @@ public class Main {
         List<Member> members = new ArrayList<>();
         loadMembers(members);
 
+        members.add(new ActiveMember ("Claus Larsen",LocalDate.parse("2000-10-05"), "12345678", "clag@nfjb", LocalDate.parse("2024-10-05"), 10.0, true,new boolean[]{true,true,true,true}));
+
         for (Member member : members) {
             System.out.println(member);
         }
