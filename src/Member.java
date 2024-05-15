@@ -1,24 +1,23 @@
 import java.util.*;
 import java.time.*;
+import java.time.format.*;
+import java.time.temporal.*;
 
 public class Member {
-    public static final int FIELD_SIZE = 7;
+    public static final int FIELD_SIZE = 6;
     private String name;
     private LocalDate birthDate;
     private String phoneNumber;
     private String email;
-    private boolean active;
-    private boolean senior;
+    private LocalDate startDate;
     private double moneyOwed;//calculate
 
-    public Member(String name, LocalDate birthDate, String phoneNumber, String email, boolean active, boolean senior, double moneyOwed) {
+    public Member(String name, LocalDate birthDate, String phoneNumber, String email, LocalDate startDate) {
         this.name = name;
         this.birthDate = birthDate;
         this.phoneNumber = phoneNumber;
         this.email = email;
-        this.active = active;
-        this.senior = senior;
-        this.moneyOwed = moneyOwed;
+        this.startDate = startDate;
     }
 
     @Override
@@ -31,6 +30,7 @@ public class Member {
                 + "\nEmail: " + this.email
                 + "\nStart Date: " + this.getDateString(this.startDate)
                 + "\nSubscription fee: " + this.getSubscriptionFee()
+                + "\nMoney owed: " + Math.round(this.getMoneyOwed()*100.0D)/ 100.0D
                 + "\nActivity Type: ";
         if (this.isActive()) {
             if (age >= 18) {
@@ -70,18 +70,7 @@ public class Member {
             string += "Passive";
         }
         return string;
-        this.name, this.birthDate, this.phoneNumber, this.email, this.active, this.senior, this.moneyOwed;
-    }
-    public int getAge() {
-        return 18;//todo: calculate age based on birthdate
-    }
-
-    public String getBirthDateString() {
-
-        LocalDate now = LocalDate.now();
-
-
-        return "2020, 1 januar";      //todo: format from localdate
+        //this.name, this.birthDate, this.phoneNumber, this.email, this.active, this.senior, this.moneyOwed;
     }
 
     public static Member fromString(String line) {
@@ -93,7 +82,7 @@ public class Member {
         LocalDate startDate = LocalDate.ofEpochDay(Long.parseLong(arguments[4]));
         double moneyOwed = Double.parseDouble(arguments[5]);
         if (arguments.length == FIELD_SIZE) {//should be 6
-            return new Member(name, birthDate, phoneNumber, email, startDate, moneyOwed);
+            return new Member(name, birthDate, phoneNumber, email, startDate).setMoneyOwed(moneyOwed);
         } else {
             boolean seniorTeam = Boolean.parseBoolean(arguments[6]);
             boolean[] activeDisciplines = new boolean[4];
@@ -101,7 +90,7 @@ public class Member {
                 activeDisciplines[i] = Boolean.parseBoolean(arguments[7 + i]);
             }
             if (arguments.length == FIELD_SIZE + ActiveMember.FIELD_SIZE) {//should be 6 + 5 so 11
-                return new ActiveMember(name, birthDate, phoneNumber, email, startDate, moneyOwed, seniorTeam, activeDisciplines);
+                return new ActiveMember(name, birthDate, phoneNumber, email, startDate, seniorTeam, activeDisciplines).setMoneyOwed(moneyOwed);
             } else {
                 int[] bestTrainingResults = new int[4];
                 for (int i = 0; i < bestTrainingResults.length; i++) {
@@ -109,19 +98,105 @@ public class Member {
                 }
                 List<Convention> conventions = new ArrayList<>();
                 int startingIndex = 11 + bestTrainingResults.length;//used to get conventions
-                while (arguments.length >= startingIndex) {
+                while (arguments.length > startingIndex) {
                     conventions.add(Convention.fromString(arguments, startingIndex));
                     startingIndex += Convention.FIELD_SIZE;
                 }
-                return new CompetitiveMember(name, birthDate, phoneNumber, email, startDate, moneyOwed, seniorTeam, activeDisciplines, bestTrainingResults, conventions);
+                return new CompetitiveMember(name, birthDate, phoneNumber, email, startDate, seniorTeam, activeDisciplines, bestTrainingResults, conventions).setMoneyOwed(moneyOwed);
             }
         }
     }
 
     public String getStringToSave() {
-        return this.name + "," + this.birthDate.toEpochDay() + "," + this.phoneNumber + "," + this.email + "," + this.active + "," + this.senior + "," + this.moneyOwed;
+        return this.name + "," + this.birthDate.toEpochDay() + "," + this.phoneNumber + "," + this.email + "," + this.startDate.toEpochDay() + "," + this.moneyOwed;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDateString(LocalDate date) {
+        //http://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd LLLL yyyy");
+        return date.format(formatter);
+    }
+
+    public LocalDate getBirthDate() {
+        return this.birthDate;
+    }
+
+    public void setBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
+    }
+    public long getAge() {
+        return ChronoUnit.YEARS.between(this.birthDate, LocalDate.now(ZoneId.of("Europe/Paris")));
+    }
+
+    public String getPhoneNumber() {
+        return this.phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getEmail() {
+        return this.email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public LocalDate getStartDate() {
+        return this.startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public double getSubscriptionFee() {
+        if (this.isActive()) {
+            long age = this.getAge();
+            if (age >= 60) {
+                return 1200;//For medlemmer over 60 år gives der 25 % rabat af seniortaksten.
+            } else if (age >= 18) {
+                return 1600;//for seniorsvømmere (18 år og over) 1600 kr. årligt
+            } else {
+                return 1000;//For aktive medlemmer er kontingentet for ungdomssvømmere (under 18 år) 1000 kr. årligt,
+            }
+        } else {
+            return 500;
+        }
     }
 
 
+    public double getMoneyOwed() {
+        return this.moneyOwed;
+    }
+
+    public Member setMoneyOwed(double moneyOwed) {
+        this.moneyOwed = moneyOwed;
+        return this;
+    }
+
+    public boolean isActive() {
+        return false;
+    }
+    public boolean isOnSeniorTeam() {
+        return false;
+    }
+    public boolean isCompetitiveMember() {
+        return false;
+    }
+
+    public List<String> getActiveDisciplines() {
+        return new ArrayList<>();
+    }
 
 }

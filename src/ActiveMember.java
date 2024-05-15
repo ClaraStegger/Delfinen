@@ -5,11 +5,34 @@ import java.util.*;
     private boolean[] activeDisciplines;//size of 4
      private boolean seniorTeam;
 
-    public ActiveMember(String name, LocalDate birthDate, String phoneNumber, String email, LocalDate startDate, double moneyOwed, boolean seniorTeam, boolean[] activeDisciplines){
-        super(name, birthDate, phoneNumber, email, startDate, moneyOwed);
+    public ActiveMember(String name, LocalDate birthDate, String phoneNumber, String email, LocalDate startDate, boolean seniorTeam, boolean[] activeDisciplines){
+        super(name, birthDate, phoneNumber, email, startDate);
         this.activeDisciplines = activeDisciplines;
         this.seniorTeam = seniorTeam;
     }
+
+     @Override
+     public String getStringToSave() {
+         String stringToSave = super.getStringToSave() + "," + this.seniorTeam;
+         for (boolean active : this.activeDisciplines) {
+             stringToSave += "," + active;
+         }
+         return stringToSave;
+     }
+
+     @Override
+     public boolean isActive() {
+         return true;
+     }
+
+     @Override
+     public boolean isOnSeniorTeam() {
+         return this.seniorTeam;
+     }
+
+     public void setIsOnSeniorTeam(boolean seniorTeam) {
+         this.seniorTeam = seniorTeam;
+     }
 
      @Override
      public List<String> getActiveDisciplines() {
@@ -29,22 +52,7 @@ import java.util.*;
          return activeDisciplineText;
      }
 
-     @Override
-     public boolean isActive() {
-         return true;
-     }
-
-     @Override
-     public boolean isOnSeniorTeam() {
-         return this.seniorTeam;
-     }
-
-     @Override
-     public String getStringToSave() {
-        String stringToSave = super.getStringToSave() + "," + this.seniorTeam;
-        for (boolean active : this.activeDisciplines) {
-            stringToSave += "," + active;
-        }
-        return stringToSave;
+     public void setActiveDisciplines(boolean[] activeDisciplines) {
+         this.activeDisciplines = activeDisciplines;
      }
  }

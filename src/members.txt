@@ -1,13 +1,2 @@
-John Bentsen,946684800000,123456789,johnbentsen@example.com,true,false,100.0"
-Mette Nielsen,1000000000000,987654321,mattenielsen@example.com,false,true,200.0,1,90,80,70,1,1630460400000,1630546800000
-Lise Hansen,946684800000,987654321,lisehansen@example.com,true,true,150.0
-Peter Pedersen,946684800000,123456789,peterpedersen@example.com,false,false,300.0
-Erik Christensen,946684800000,123456789,erikchristensen@example.com,true,false,150.0
-Hanne Andersen,1000000000000,987654321,hanneandersen@example.com,false,true,220.0,1,95,85,75,1,1630460400000,1630546800000
-Mads Madsen,946684800000,987654321,madsmadsen@example.com,true,true,180.0
-Louise Larsen,946684800000,123456789,louiselarsen@example.com,false,false,280.0
-Ole Olsen,946684800000,123456789,oleolsen@example.com,true,false,130.0
-Karen Poulsen,1000000000000,987654321,karenpoulsen@example.com,false,true,240.0,1,92,82,72,1,1630460400000,1630546800000
-Henrik Henriksen,946684800000,987654321,henrikhenriksen@example.com,true,true,170.0
-Anne Nielsen,946684800000,123456789,annenielsen@example.com,false,false,260.0
-Frederik Frederiksen,946684800000,123456789,frederikfrederiksen@example.com,true,false,140.0
+Claus Larsen,11235,12345678,clag@nfjb,20001,10.0,true,true,true,true,true
+Albert Multebær,11264,23344556,albert@albbert.dk,20058,0.0,true,true,false,true,false,0,0,0,0
