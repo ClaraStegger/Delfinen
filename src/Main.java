@@ -172,6 +172,9 @@ public class Main {
                         System.out.println("Enter the email of the Member");
                         memberToChange.setEmail(scan.nextLine());
                         break;
+
+
+
                     case "5":
                         if (LocalDate.now().isAfter(memberToChange.getStartDate())) {
                             System.out.println("This member has already started, so you cannot change their start date");
