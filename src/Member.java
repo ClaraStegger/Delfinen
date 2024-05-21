@@ -92,17 +92,21 @@ public class Member {
             if (arguments.length == FIELD_SIZE + ActiveMember.FIELD_SIZE) {//should be 6 + 5 so 11
                 return new ActiveMember(name, birthDate, phoneNumber, email, startDate, seniorTeam, activeDisciplines).setMoneyOwed(moneyOwed);
             } else {
+                LocalDate[] datesOfBestTrainingResults =new LocalDate[4];
+                for (int i = 0; i < datesOfBestTrainingResults.length; i++) {
+                    datesOfBestTrainingResults[i] = LocalDate.ofEpochDay(Long.parseLong(arguments[11 + i]));
+                }
                 int[] bestTrainingResults = new int[4];
                 for (int i = 0; i < bestTrainingResults.length; i++) {
-                    bestTrainingResults[i] = Integer.parseInt(arguments[11 + i]);
+                    bestTrainingResults[i] = Integer.parseInt(arguments[15 + i]);
                 }
                 List<Convention> conventions = new ArrayList<>();
-                int startingIndex = 11 + bestTrainingResults.length;//used to get conventions
+                int startingIndex = 15 + bestTrainingResults.length;//used to get conventions
                 while (arguments.length > startingIndex) {
                     conventions.add(Convention.fromString(arguments, startingIndex));
                     startingIndex += Convention.FIELD_SIZE;
                 }
-                return new CompetitiveMember(name, birthDate, phoneNumber, email, startDate, seniorTeam, activeDisciplines, bestTrainingResults, conventions).setMoneyOwed(moneyOwed);
+                return new CompetitiveMember(name, birthDate, phoneNumber, email, startDate, seniorTeam, activeDisciplines, datesOfBestTrainingResults,bestTrainingResults, conventions).setMoneyOwed(moneyOwed);
             }
         }
     }
@@ -199,4 +203,26 @@ public class Member {
         return new ArrayList<>();
     }
 
+    public LocalDate[] getDatesOfBestTrainingResults() {
+        return null;
+    }
+    public int[] getBestTrainingResults() {
+        return null;
+    }
+
+    public int getTeamIndex(){
+        if (this.isCompetitiveMember()) {
+            if (this.isOnSeniorTeam()) {
+                return 3;// Senior Competitive Team
+            } else {
+                return 2;// Junior Competitive Team
+            }
+        } else {
+            if (this.isOnSeniorTeam()) {
+                return 1;// Senior Team
+            } else {
+                return 0;// Junior Team
+            }
+        }
+    }
 }

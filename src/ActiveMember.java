@@ -37,17 +37,11 @@ import java.util.*;
      @Override
      public List<String> getActiveDisciplines() {
          List<String> activeDisciplineText =new ArrayList<>();
-         if (this.activeDisciplines[0]) {
-             activeDisciplineText.add("Butterfly");
-         }
-         if (this.activeDisciplines[1]) {
-             activeDisciplineText.add("Crawl");
-         }
-         if (this.activeDisciplines[2]) {
-             activeDisciplineText.add("Backcrawl");
-         }
-         if (this.activeDisciplines[3]) {
-             activeDisciplineText.add("Breaststroke");
+         for (int i = 0; i < this.activeDisciplines.length; i++) {
+             boolean active =this.activeDisciplines[i];
+             if (active) {
+                 activeDisciplineText.add(Main.getDisciplineFromIndex(i));
+             }
          }
          return activeDisciplineText;
      }
