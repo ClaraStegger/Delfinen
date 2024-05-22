@@ -245,7 +245,7 @@ public class Main {
         for (int i = 0; i < members.size(); i++) {
             Member member = members.get(i);
             if (phoneNumberOfMemberToDelete.equals(member.getPhoneNumber())) {
-                System.out.println("Are you sure you want to delete " + member);
+                System.out.println("Are you sure you want to delete " + member + ". Enter yes/no");
                 if (getBooleanFromScanner()) {
                     removeMemberFromAllTeamLists(teamMembers, member);
                     members.remove(i);
