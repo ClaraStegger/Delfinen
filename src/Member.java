@@ -19,7 +19,6 @@ public class Member {
         this.email = email;
         this.startDate = startDate;
     }
-
     @Override
     public String toString() {
         long age = this.getAge();
@@ -94,7 +93,10 @@ public class Member {
             } else {
                 LocalDate[] datesOfBestTrainingResults =new LocalDate[4];
                 for (int i = 0; i < datesOfBestTrainingResults.length; i++) {
-                    datesOfBestTrainingResults[i] = LocalDate.ofEpochDay(Long.parseLong(arguments[11 + i]));
+                    String argument = arguments[11 + i];
+                    if (argument != null && !"null".equals(argument)) {
+                        datesOfBestTrainingResults[i] = LocalDate.ofEpochDay(Long.parseLong(argument));
+                    }
                 }
                 int[] bestTrainingResults = new int[4];
                 for (int i = 0; i < bestTrainingResults.length; i++) {

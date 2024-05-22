@@ -6,16 +6,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.TimeUnit;
 
 public class Main {
 
     public static void main(String[] args) {
         List<List<Member>> teamMembers = new ArrayList<>();
-        teamMembers.add(new ArrayList<>());// Junior Team
-        teamMembers.add(new ArrayList<>());// Senior Team
-        teamMembers.add(new ArrayList<>());// Junior Competitive Team
-        teamMembers.add(new ArrayList<>());// Senior Competitive Team
         List<Member> members = new ArrayList<>();
         Scanner scanner = new Scanner(System.in);
         loadMembers(members, teamMembers);
@@ -27,10 +22,8 @@ public class Main {
             System.out.println("*----*----*----*----*----*----*MAIN MENU*----*----*----*----*----*----*");
             System.out.println("|          ➤ 1.  Member Menu                                         |");
             System.out.println("|          ➤ 2.  Team Menu                                           |");
-            System.out.println("|          ➤ 3.                                                      |");
-            System.out.println("|          ➤ 4.                                                      |");
-            System.out.println("|          ➤ 5.                                                      |");
-            System.out.println("|          ➤ 6.  Exit Program                                        |");
+            System.out.println("|          ➤ 3.  Cashier Menu                                        |");
+            System.out.println("|          ➤ 4.  Exit Program                                        |");
             System.out.println("*----*----*----*----*----*----* </^\\>  *----*----*----*----*----*----*");
 
             choice = scanner.nextLine();
@@ -42,14 +35,10 @@ public class Main {
                     teamMenu(members, teamMembers);
                     break;
                 case "3":
-                    //loadMembers();
-                    break;
-                case "4":
-                    break;
-                case "5":
+                    cashierMenu(members);
                     break;
             }
-        } while (!choice.equals("6"));
+        } while (!choice.equals("4"));
     }
 
     private static void memberMenu(List<Member> members, List<List<Member>> teamMembers) {
@@ -296,19 +285,19 @@ public class Main {
             switch (answer) {
                 case "1":
                     System.out.println("--> JUNIOR TEAM <--");
-                    seeTeamList(juniorTeam);
+                    seeTeamList(members, juniorTeam, false);
                     break;
                 case "2":
                     System.out.println("--> SENIOR TEAM <--");
-                    seeTeamList(seniorTeam);
+                    seeTeamList(members, seniorTeam, false);
                     break;
                 case "3":
                     System.out.println("--> JUNIOR COMPETITIVE TEAM <--");
-                    seeTeamList(juniorCompetitiveTeam);
+                    seeTeamList(members, juniorCompetitiveTeam, true);
                     break;
                 case "4":
                     System.out.println("--> SENIOR COMPETITIVE TEAM <--");
-                    seeTeamList(seniorCompetitiveTeam);
+                    seeTeamList(members, seniorCompetitiveTeam, true);
                     break;
                 case "5":
                     exitMenu = true;
@@ -320,7 +309,7 @@ public class Main {
         } while (!exitMenu);
     }
 
-    private static void seeTeamList(final List<Member> teamList) {
+    private static void seeTeamList(List<Member> members, List<Member> teamList, boolean competitive) {
         Scanner scan = new Scanner(System.in);
         for (Member member : teamList) {
             String string = "Name: " + member.getName()
@@ -363,38 +352,174 @@ public class Main {
             }
             System.out.println(string);
         }
+        if (competitive) {
+            boolean exitMenu = false;
+            do {
+                System.out.println("""
+                                                
+                        >> FUNCTIONS <<
+                        1 -  Add Training Result
+                        2 -  Add Swimming Gala
+                        3 -  Top 5
+                        4 -  Exit Team Menu
+                        """);
+                String choice = scan.nextLine();
+                switch (choice) {
+                    case "1":
+                        addTrainingResult(members, teamList);
+                        break;
+                    case "2":
+                        //addSwimmingGala()
+                        break;
+                    case "3":
+                        break;
+                    case "4":
+                        exitMenu = true;
+                        break;
+                    default:
+                        System.out.print("I did not get your answer. Try again.");
+                        break;
+                }
+            } while (!exitMenu);
+        }
+    }
+
+    private static void addTrainingResult(List<Member> members, List<Member> teamList) {
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Enter the phone number of the Member, you want to add a training result to:");
+        String phoneNumberOfMemberToChange = scan.nextLine();
+        CompetitiveMember memberToAddTrainingResultTo = null;
+        for (int i = 0; i < teamList.size(); i++) {
+            Member member = teamList.get(i);
+            if (member.isCompetitiveMember() && member.getPhoneNumber().equals(phoneNumberOfMemberToChange)) {
+                memberToAddTrainingResultTo = (CompetitiveMember) member;
+                break;
+            }
+        }
+        if (memberToAddTrainingResultTo != null) {
+            System.out.println("""
+                    Choose a discipline:
+                     1 - Butterfly
+                     2 - Crawl
+                     3 - Backcrawl
+                     4 - Breaststroke
+                     """);
+            int choice = scan.nextInt() - 1;
+            scan.nextLine();
+            int[] trainingResults = memberToAddTrainingResultTo.getBestTrainingResults();
+            if (choice >= 0 && choice < trainingResults.length) {
+                System.out.println("Enter race time (Format: min:sec:milli)");
+                int newResult = getMillisecondsFromTime(scan.nextLine());
+                int existingResult = trainingResults[choice];
+                if (existingResult <= 0 || existingResult >= newResult) {
+                    System.out.println("Enter date for training result (Format: year-month-day):");
+                    LocalDate[] datesOfBestTrainingResults = memberToAddTrainingResultTo.getDatesOfBestTrainingResults();
+                    datesOfBestTrainingResults[choice] = LocalDate.parse(scan.nextLine());
+                    trainingResults[choice] = newResult;
+                    saveMembers(members);
+                    System.out.println("The race time has been saved");
+                } else {
+                    System.out.println("Swimmer's previous race time was quicker");
+                }
+            } else {
+                System.out.println("Invalid choice");
+            }
+        }
+    }
+
+    private static void addMemberToTeamList(List<List<Member>> teamMembers, Member member) {
+        teamMembers.get(member.getTeamIndex()).add(member);
+    }
+
+    private static void removeMemberFromAllTeamLists(List<List<Member>> teamMembers, Member member) {
+        for (List<Member> teamList : teamMembers) {
+            teamList.remove(member);
+        }
+    }
+
+    private static void cashierMenu(List<Member> members) {
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Members in arrears");
+        for (Member member : members) {
+            double moneyOwed = member.getMoneyOwed();
+            if (moneyOwed > 0) {
+                String string = "Name: " + member.getName()
+                        + "\nPhoneNumber: " + member.getPhoneNumber()
+                        + "\nEmail: " + member.getEmail()
+                        + "\nStart Date: " + member.getDateString(member.getStartDate())
+                        + "\nSubscription fee: " + member.getSubscriptionFee()
+                        + "\nMoney owed: " + Math.round(moneyOwed * 100.0D) / 100.0D;
+                System.out.println(string);
+            }
+        }
         boolean exitMenu = false;
         do {
-            String argument = scan.next();
             System.out.println("""
                     >> FUNCTIONS <<
-                    1 -  Add Training Result
-                    2 -  Add Swimming Gala
-                    3 -  Top 5
-                    4 -  Exit Team Menu
+                    1 - Change member in arrears
+                    2 - Display expected annual income;
+                    3 - Exit Cashier Menu
                     """);
-            switch (argument) {
+            String choice = scan.nextLine();
+            switch (choice) {
                 case "1":
+                    changeMemberInArrears(members);
                     break;
                 case "2":
+                    getExpectedAnnualIncome(members);
                     break;
                 case "3":
-                    break;
-                case "4":
                     exitMenu = true;
                     break;
-                default:
-                    System.out.print("I did not get your answer. Try again.");
-                    break;
             }
-
-
         } while (!exitMenu);
+    }
+
+    private static void changeMemberInArrears(List<Member> members) {
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Enter the phone number of the Member, you want to change arrears of:");
+        String phoneNumberOfMemberToChange = scan.nextLine();
+        boolean save = false;
+        for (Member member : members) {
+            double moneyOwed = member.getMoneyOwed();
+            if (moneyOwed > 0 && member.getPhoneNumber().equals(phoneNumberOfMemberToChange)) {
+                System.out.println("Enter amount of money that the member has paid");
+                double moneyPaid = scan.nextDouble();
+                double remainingMoneyOwed = moneyOwed - moneyPaid;
+                if (remainingMoneyOwed < 0) {
+                    System.out.println("You need to return " + (-remainingMoneyOwed) + " kr. to " + member.getName());
+                    remainingMoneyOwed = 0;
+                }
+                member.setMoneyOwed(remainingMoneyOwed);
+                System.out.println(member.getName() + " now owes " + member.getMoneyOwed() + " kr.");
+                save = true;
+                break;
+
+            }
+        }
+        if (save) {
+            saveMembers(members);
+        } else {
+            System.out.println("Could not find a member with the phone number: " + phoneNumberOfMemberToChange + ", who owes money");
+        }
+    }
+
+    private static void getExpectedAnnualIncome(List<Member> members) {
+        double expectedIncome = 0;
+        for (Member member : members) {
+            expectedIncome += member.getSubscriptionFee();
+        }
+        System.out.println("Expected annual income is " + expectedIncome + " kr.");
     }
 
     private static void loadMembers(List<Member> members, List<List<Member>> teamMembers) { //metode til at printe medlemmer til konsollen
         try {
             members.clear();
+            teamMembers.clear();
+            teamMembers.add(new ArrayList<>());// Junior Team
+            teamMembers.add(new ArrayList<>());// Senior Team
+            teamMembers.add(new ArrayList<>());// Junior Competitive Team
+            teamMembers.add(new ArrayList<>());// Senior Competitive Team
             Scanner input = new Scanner(new File("src/members.txt"));
             while (input.hasNextLine()) {
                 String line = input.nextLine();
@@ -420,26 +545,24 @@ public class Main {
         }
     }
 
-    private static void addMemberToTeamList(List<List<Member>> teamMembers, Member member) {
-        teamMembers.get(member.getTeamIndex()).add(member);
-    }
-
-    private static void removeMemberFromAllTeamLists(List<List<Member>> teamMembers, Member member) {
-        for (List<Member> teamList : teamMembers) {
-            teamList.remove(member);
-        }
-    }
-
     private static boolean getBooleanFromScanner() {
         String nextLine = new Scanner(System.in).nextLine();
         return nextLine.equalsIgnoreCase("yes") || nextLine.equalsIgnoreCase("ja");
     }
 
-    private static String getTimeFromMilliseconds(int milliseconds) {
-        int minutes = (milliseconds / (1000 * 60));
-        int seconds = (milliseconds / 1000) % 60;
-        milliseconds -= seconds * 1000;
-        return milliseconds + ":" + seconds + "." + milliseconds;
+    private static int getMillisecondsFromTime(String nextLine) {
+        String[] arguments = nextLine.split(":");
+        int minutes = Integer.parseInt(arguments[0]);
+        int seconds = Integer.parseInt(arguments[1]);
+        int milliseconds = Integer.parseInt(arguments[2]);
+        return milliseconds + (seconds * 1000) + (minutes * 60000);
+    }
+
+    private static String getTimeFromMilliseconds(int result) {
+        int minutes = result / 60000;
+        int seconds = (result / 1000) - minutes * 60;
+        int milliseconds = (result - (seconds * 1000)) - (minutes * 60000);
+        return minutes + ":" + seconds + ":" + milliseconds;
     }
 
     public static String getDisciplineFromIndex(int index) {

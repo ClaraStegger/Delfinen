@@ -4,8 +4,8 @@ import java.util.List;
 import java.time.*;
 
 public class CompetitiveMember extends ActiveMember {
+    private LocalDate[] datesOfBestTrainingResults;//butterfly, crawl, rygcrawl og brystsvømning
     private int[] bestTrainingResults;//butterfly, crawl, rygcrawl og brystsvømning
-    private LocalDate[] datesOfBestTrainingResults;
     private List<Convention> conventions;
 
     public CompetitiveMember(String name, LocalDate birthDate, String phoneNumber, String email, LocalDate startDate, boolean seniorTeam, boolean[] activeDisciplines) {
@@ -23,7 +23,11 @@ public class CompetitiveMember extends ActiveMember {
     public String getStringToSave() {
         String stringToSave = super.getStringToSave();
         for (LocalDate dateOfBestTrainingResult : this.datesOfBestTrainingResults) {
-            stringToSave += "," + dateOfBestTrainingResult.toEpochDay();
+            if (dateOfBestTrainingResult == null) {
+                stringToSave += ",null";
+            } else {
+                stringToSave += "," + dateOfBestTrainingResult.toEpochDay();
+            }
         }
         for (int bestTrainingResult : this.bestTrainingResults) {
             stringToSave += "," + bestTrainingResult;
