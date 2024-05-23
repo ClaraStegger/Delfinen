@@ -3,9 +3,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
 
@@ -14,6 +12,11 @@ public class Main {
         List<Member> members = new ArrayList<>();
         Scanner scanner = new Scanner(System.in);
         loadMembers(members, teamMembers);
+        //try {
+        //    generateRandomMember(members, teamMembers);
+        //} catch (Exception exception) {
+        //    exception.printStackTrace();
+        //}
 
         //members.add(new ActiveMember("Claus Larsen", LocalDate.parse("2000-10-05"), "12345678", "clag@nfjb", LocalDate.parse("2024-10-05"), true, new boolean[]{true, true, true, true}).setMoneyOwed(10.0));
 
@@ -359,8 +362,8 @@ public class Main {
                                                 
                         >> FUNCTIONS <<
                         1 -  Add Training Result
-                        2 -  Add Swimming Gala
-                        3 -  Top 5
+                        2 -  Add Swimming Gala Result
+                        3 -  See Top 5
                         4 -  Exit Team Menu
                         """);
                 String choice = scan.nextLine();
@@ -369,9 +372,10 @@ public class Main {
                         addTrainingResult(members, teamList);
                         break;
                     case "2":
-                        //addSwimmingGala()
+                        addSwimGalaResults(members, teamList);
                         break;
                     case "3":
+                        seeTopFive(teamList);
                         break;
                     case "4":
                         exitMenu = true;
@@ -387,11 +391,10 @@ public class Main {
     private static void addTrainingResult(List<Member> members, List<Member> teamList) {
         Scanner scan = new Scanner(System.in);
         System.out.println("Enter the phone number of the Member, you want to add a training result to:");
-        String phoneNumberOfMemberToChange = scan.nextLine();
+        String phoneNumber = scan.nextLine();
         CompetitiveMember memberToAddTrainingResultTo = null;
-        for (int i = 0; i < teamList.size(); i++) {
-            Member member = teamList.get(i);
-            if (member.isCompetitiveMember() && member.getPhoneNumber().equals(phoneNumberOfMemberToChange)) {
+        for (Member member : teamList) {
+            if (member.isCompetitiveMember() && member.getPhoneNumber().equals(phoneNumber)) {
                 memberToAddTrainingResultTo = (CompetitiveMember) member;
                 break;
             }
@@ -424,6 +427,78 @@ public class Main {
             } else {
                 System.out.println("Invalid choice");
             }
+        } else {
+            System.out.println("Could not find a member with the phone number: " + phoneNumber);
+        }
+    }
+
+    private static void addSwimGalaResults(List<Member> members, List<Member> teamList) {
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Enter the phone number of the Member, you want to add a training result to:");
+        String phoneNumber = scan.nextLine();
+        CompetitiveMember memberFound = null;
+        for (Member member : teamList) {
+            if (member.isCompetitiveMember() && member.getPhoneNumber().equals(phoneNumber)) {
+                memberFound = (CompetitiveMember) member;
+                break;
+            }
+        }
+        if (memberFound != null) {
+            System.out.println("Enter the date for the Swimming Gala (format: year-month-day):");
+            LocalDate date = LocalDate.parse(scan.nextLine());
+            System.out.println("Enter the location for the Swimming Gala:");
+            String location = scan.nextLine();
+            int[] results = new int[4];
+            for (int i = 0; i < results.length; i++) {
+                System.out.println("Enter race time for the " + getDisciplineFromIndex(i) + " discipline (Format: min:sec:milli) (if not applicable enter '0')");
+                results[i] = getMillisecondsFromTime(scan.nextLine());
+            }
+            Convention convention = new Convention(date, location, results);
+            memberFound.getConventions().add(convention);
+            saveMembers(members);
+            System.out.println("Swimming Gala results has been saved for " + memberFound.getName());
+        } else {
+            System.out.println("Could not find a member with the phone number: " + phoneNumber);
+        }
+    }
+
+    private static void seeTopFive(List<Member> teamList) {
+        for (int i = 0; i < 4; i++) {
+            final int index = i;
+            List<Member> topInDiscipline = new ArrayList<>(teamList);
+            topInDiscipline.sort(new Comparator<Member>() {
+                @Override
+                public int compare(Member member1, Member member2) {
+                    int[] trainingResultsOne = member1.getBestTrainingResults();
+                    int[] trainingResultsTwo = member2.getBestTrainingResults();
+                    //
+                    int trainingResultOne = trainingResultsOne != null ? trainingResultsOne[index] : Integer.MAX_VALUE;
+                    if (trainingResultOne <= 0) {
+                        trainingResultOne = Integer.MAX_VALUE;
+                    }
+                    int trainingResultTwo = trainingResultsTwo != null ? trainingResultsTwo[index] : Integer.MAX_VALUE;
+                    if (trainingResultTwo <= 0) {
+                        trainingResultTwo = Integer.MAX_VALUE;
+                    }
+                    //
+                    return trainingResultOne - trainingResultTwo;
+                }
+            });
+            if (!topInDiscipline.isEmpty()) {
+                System.out.println("\n--> Top 5 - " + getDisciplineFromIndex(index) + " <--");
+                for (int j = 0; j < Math.min(topInDiscipline.size(), 5); j++) {
+                    Member member = topInDiscipline.get(j);
+                    int[] trainingResults = member.getBestTrainingResults();
+                    if (trainingResults != null) {
+                        int trainingResult = trainingResults[index];
+                        if (trainingResult > 0) {
+                            int placement = j + 1;
+                            String string = placement + ". " + member.getName() + " - " + getTimeFromMilliseconds(trainingResult);
+                            System.out.println(string);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -450,6 +525,7 @@ public class Main {
                         + "\nSubscription fee: " + member.getSubscriptionFee()
                         + "\nMoney owed: " + Math.round(moneyOwed * 100.0D) / 100.0D;
                 System.out.println(string);
+                System.out.println();
             }
         }
         boolean exitMenu = false;
@@ -560,9 +636,21 @@ public class Main {
 
     private static String getTimeFromMilliseconds(int result) {
         int minutes = result / 60000;
+        String minuteString;
+        if (minutes < 10) {
+            minuteString = "0" + minutes;
+        } else {
+            minuteString = String.valueOf(minutes);
+        }
         int seconds = (result / 1000) - minutes * 60;
+        String secondString;
+        if (seconds < 10) {
+            secondString = "0" + seconds;
+        } else {
+            secondString = String.valueOf(seconds);
+        }
         int milliseconds = (result - (seconds * 1000)) - (minutes * 60000);
-        return minutes + ":" + seconds + ":" + milliseconds;
+        return minuteString + ":" + secondString + ":" + milliseconds;
     }
 
     public static String getDisciplineFromIndex(int index) {
@@ -576,5 +664,279 @@ public class Main {
             case 3:
                 return "Breaststroke";
         }
+    }
+
+    private static void generateRandomMember(List<Member> members, List<List<Member>> teamMembers) {
+        Random random = new Random();
+        List<String> names = new ArrayList<>();
+        names.add("Aaron Smith");
+        names.add("Abby Johnson");
+        names.add("Adam Brown");
+        names.add("Alice Davis");
+        names.add("Alan Wilson");
+        names.add("Amanda Taylor");
+        names.add("Andrew Anderson");
+        names.add("Angela Thomas");
+        names.add("Anthony Jackson");
+        names.add("April White");
+        names.add("Arthur Harris");
+        names.add("Audrey Martin");
+        names.add("Austin Thompson");
+        names.add("Ava Garcia");
+        names.add("Ben Clark");
+        names.add("Beth Lewis");
+        names.add("Brian Lee");
+        names.add("Brianna Walker");
+        names.add("Caleb Hall");
+        names.add("Camille Young");
+        names.add("Cameron King");
+        names.add("Carly Wright");
+        names.add("Charles Scott");
+        names.add("Chloe Green");
+        names.add("Chris Adams");
+        names.add("Claire Baker");
+        names.add("Cody Gonzalez");
+        names.add("Courtney Nelson");
+        names.add("Colin Carter");
+        names.add("Daisy Mitchell");
+        names.add("Daniel Perez");
+        names.add("Danielle Roberts");
+        names.add("David Turner");
+        names.add("Denise Phillips");
+        names.add("Dylan Campbell");
+        names.add("Diana Parker");
+        names.add("Edward Evans");
+        names.add("Emma Edwards");
+        names.add("Ethan Collins");
+        names.add("Eva Stewart");
+        names.add("Felix Sanchez");
+        names.add("Fiona Morris");
+        names.add("Frank Rogers");
+        names.add("Faith Reed");
+        names.add("Gavin Cook");
+        names.add("Grace Morgan");
+        names.add("George Bell");
+        names.add("Gina Murphy");
+        names.add("Greg Bailey");
+        names.add("Hannah Rivera");
+        names.add("Henry Cooper");
+        names.add("Holly Richardson");
+        names.add("Isaac Cox");
+        names.add("Iris Bailey");
+        names.add("Ivan Powell");
+        names.add("Ivy Howard");
+        names.add("Jack Ward");
+        names.add("Jenna Brooks");
+        names.add("James Foster");
+        names.add("Julie Gray");
+        names.add("Jason Bryant");
+        names.add("Jill Price");
+        names.add("Jeff Peterson");
+        names.add("Jane Russell");
+        names.add("Justin Diaz");
+        names.add("Judy Griffin");
+        names.add("Kevin Simmons");
+        names.add("Kate Bennett");
+        names.add("Kyle Ross");
+        names.add("Kelly Coleman");
+        names.add("Liam Patterson");
+        names.add("Laura Jenkins");
+        names.add("Luke Perry");
+        names.add("Linda Sanders");
+        names.add("Logan Long");
+        names.add("Lily Patterson");
+        names.add("Mark Flores");
+        names.add("Megan Hughes");
+        names.add("Mason Perry");
+        names.add("Molly Sullivan");
+        names.add("Matthew Bryant");
+        names.add("Mia Bell");
+        names.add("Michael Foster");
+        names.add("Morgan Simmons");
+        names.add("Nathan Price");
+        names.add("Natalie Bennett");
+        names.add("Noah Coleman");
+        names.add("Nora Jenkins");
+        names.add("Oliver Brooks");
+        names.add("Olivia Gray");
+        names.add("Oscar Ross");
+        names.add("Paige Russell");
+        names.add("Owen Diaz");
+        names.add("Penny Griffin");
+        names.add("Paul Hughes");
+        names.add("Ruby Flores");
+        names.add("Peter Perry");
+        names.add("Sally Long");
+        names.add("Quinn Ward");
+        names.add("Sarah Bell");
+        names.add("Rachel Gray");
+        names.add("Ryan Bryant");
+        names.add("Rebecca Foster");
+        names.add("Robert Simmons");
+        names.add("Samuel Price");
+        names.add("Sophie Bennett");
+        names.add("Scott Coleman");
+        names.add("Stephanie Jenkins");
+        names.add("Sean Brooks");
+        names.add("Sydney Perry");
+        names.add("Spencer Russell");
+        names.add("Tara Griffin");
+        names.add("Steven Hughes");
+        names.add("Taylor Ross");
+        names.add("Thomas Diaz");
+        names.add("Vanessa Long");
+        names.add("Tim Ward");
+        names.add("Victoria Bell");
+        names.add("Travis Gray");
+        names.add("Wendy Bryant");
+        names.add("Trevor Foster");
+        names.add("Whitney Simmons");
+        names.add("Tyler Price");
+        names.add("Willow Bennett");
+        names.add("Vincent Coleman");
+        names.add("Wendy Jenkins");
+        names.add("Walter Brooks");
+        names.add("Yolanda Bell");
+        names.add("Warren Gray");
+        names.add("Zoey Ross");
+        names.add("Wesley Bryant");
+        names.add("Zoe Foster");
+        names.add("Wyatt Simmons");
+        names.add("Zane Price");
+        names.add("Xavier Bennett");
+        names.add("Yasmin Coleman");
+        names.add("Zachary Jenkins");
+        names.add("Angela Walker");
+        names.add("Brian Young");
+        names.add("Christina King");
+        names.add("Dennis Wright");
+        names.add("Elaine Scott");
+        names.add("Fred Green");
+        names.add("Gina Adams");
+        names.add("Hector Baker");
+        names.add("Irene Gonzalez");
+        names.add("Jack Nelson");
+        names.add("Karen Carter");
+        names.add("Louis Mitchell");
+        names.add("Maria Perez");
+        names.add("Nicholas Roberts");
+        names.add("Olivia Turner");
+        names.add("Patrick Phillips");
+        names.add("Quinn Campbell");
+        names.add("Raymond Parker");
+        names.add("Samantha Evans");
+        names.add("Theodore Edwards");
+        names.add("Ursula Collins");
+        names.add("Victor Stewart");
+        names.add("Wendy Sanchez");
+        names.add("Xavier Morris");
+        names.add("Yolanda Rogers");
+        names.add("Zeke Reed");
+        names.add("Alex Cook");
+        names.add("Bella Morgan");
+        names.add("Carter Bell");
+        names.add("Dana Murphy");
+        names.add("Eli Cooper");
+        names.add("Fiona Richardson");
+        names.add("Gavin Cox");
+        names.add("Haley Howard");
+        names.add("Ian Ward");
+        names.add("Jenna Bailey");
+        names.add("Kevin Powell");
+        names.add("Laura Patterson");
+        names.add("Mason Perry");
+        names.add("Nina Long");
+        names.add("Oscar Ward");
+        names.add("Penny Bailey");
+        names.add("Quentin Powell");
+        names.add("Rachel Patterson");
+        names.add("Steven Perry");
+        names.add("Tina Long");
+        names.add("Ulysses Ward");
+        names.add("Valerie Bailey");
+        names.add("William Powell");
+        names.add("Xavier Patterson");
+        names.add("Yvonne Perry");
+        names.add("Zachary Long");
+        names.add("Abby Young");
+        names.add("Brandon King");
+        names.add("Chelsea Wright");
+        names.add("Derek Scott");
+        names.add("Ella Green");
+        names.add("Frank Adams");
+        names.add("Grace Baker");
+        names.add("Harry Gonzalez");
+        names.add("Isla Nelson");
+        names.add("Jack Carter");
+        names.add("Karen Mitchell");
+
+        for (int i = 0; i < names.size(); i++) {
+
+            int timeOne = random.nextInt(300000) + 1;
+            int timeTwo = random.nextInt(300000) + 1;
+            int timeThree = random.nextInt(300000) + 1;
+            int timeFour = random.nextInt(300000) + 1;
+
+            boolean owesMoney = random.nextInt(4) == 0;
+            int moneyOwed = owesMoney ? random.nextInt(1600) + 1 : 0;
+            boolean seniorTeam = random.nextBoolean();
+            String phoneNumber = "";
+            for (int j = 0; j < 8; j++) {
+                phoneNumber += random.nextInt(10);
+            }
+
+            int year = 1950 + random.nextInt(75);
+            int month = random.nextInt(12) + 1;
+            int day = random.nextInt(28) + 1;
+
+            String monthString = String.valueOf(month);
+            if (month < 10) {
+                monthString = "0" + monthString;
+            }
+
+            String dayString = String.valueOf(day);
+            if (day < 10) {
+                dayString = "0" + dayString;
+            }
+
+            LocalDate birthDate = LocalDate.parse(year + "-" + monthString + "-" + dayString);
+
+            int joinYear = 2014 + random.nextInt(11);
+            int joinMonth = random.nextInt(12) + 1;
+            int joinDay = random.nextInt(28) + 1;
+
+
+            String joinMonthString = String.valueOf(joinMonth);
+            if (joinMonth < 10) {
+                joinMonthString = "0" + joinMonthString;
+            }
+
+            String joinDayString = String.valueOf(joinDay);
+            if (joinDay < 10) {
+                joinDayString = "0" + joinDayString;
+            }
+
+            LocalDate joinDate = LocalDate.parse(joinYear + "-" + joinMonthString + "-" + joinDayString);
+
+
+            String line = names.get(i) + "," + birthDate.toEpochDay() + "," + phoneNumber + ",email@gmail.com," + joinDate.toEpochDay() + "," + moneyOwed;
+            if (random.nextInt(8) != 0) {
+                line += "," + seniorTeam + "," + random.nextBoolean() + "," + random.nextBoolean() + "," + random.nextBoolean() + "," + random.nextBoolean();
+                if (random.nextBoolean()) {
+                    line += ",19865,19865,19865,19865," + timeOne + "," + timeTwo + "," + timeThree + "," + timeFour;
+                }
+            }
+
+            Member member = Member.fromString(line);
+            members.add(member);
+            addMemberToTeamList(teamMembers, member);
+        }
+
+        //Claus Larsen,11235,12345678,clag@nfjb,20001,0.0,true,true,true,true,false,19865,null,null,null,131012,0,0,0
+        //Erik Bølleberg,11315,45678902,erik@bølleberg.dk,18035,0.0,false,true,true,true,true,null,null,null,null,0,0,0,0
+        //Birgitte Larsen,7387,23456543,bir@larsen.dk,18401,0.0,true,true,true,false,true,null,null,null,null,0,0,0,0
+        //Hans Børge,14421,45674567,hans@boerge.dk,19105,0.0,false,true,false,false,false,null,null,null,null,0,0,0,0
+
+        saveMembers(members);
     }
 }

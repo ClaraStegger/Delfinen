@@ -52,6 +52,10 @@ public class CompetitiveMember extends ActiveMember {
     public boolean isCompetitiveMember() {
         return true;
     }
+
+    public List<Convention> getConventions() {
+        return this.conventions;
+    }
 }
 
 
