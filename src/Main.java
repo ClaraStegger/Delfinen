@@ -20,10 +20,10 @@ public class Main {
         String choice;
         do {
             System.out.println("*----*----*----*----*----*----*MAIN MENU*----*----*----*----*----*----*");
-            System.out.println("|          ➤ 1.  Member Menu                                         |");
-            System.out.println("|          ➤ 2.  Team Menu                                           |");
-            System.out.println("|          ➤ 3.  Cashier Menu                                        |");
-            System.out.println("|          ➤ 4.  Exit Program                                        |");
+            System.out.println("|          ➤ 1.  Member Menu                                          |");
+            System.out.println("|          ➤ 2.  Team Menu                                            |");
+            System.out.println("|          ➤ 3.  Cashier Menu                                         |");
+            System.out.println("|          ➤ 4.  Exit Program                                         |");
             System.out.println("*----*----*----*----*----*----* </^\\>  *----*----*----*----*----*----*");
 
             choice = scanner.nextLine();
